@@ -52,14 +52,8 @@
     justify-content: space-between; align-items: center; gap: 10px;
   }
   .balance-main { flex: 1; }
-  .balance-label {
-    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 4px;
-  }
-  .balance-amount {
-    font-family: 'DM Mono', monospace; font-size: 36px;
-    font-weight: 500; letter-spacing: -1px; transition: color 0.3s;
-  }
+  .balance-label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .balance-amount { font-family: 'DM Mono', monospace; font-size: 36px; font-weight: 500; letter-spacing: -1px; transition: color 0.3s; }
   .balance-amount.owes { color: var(--red); }
   .balance-amount.settled { color: var(--green); }
   .balance-note { font-size: 12px; margin-top: 4px; }
@@ -72,10 +66,7 @@
   .stat-val.spent { color: var(--red); }
   .stat-val.paid { color: var(--green); }
   .content { padding: 0 20px; }
-  .section-title {
-    font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase;
-    color: var(--muted); margin: 18px 0 10px;
-  }
+  .section-title { font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--muted); margin: 18px 0 10px; }
   .type-toggle { display: flex; gap: 8px; margin-bottom: 14px; }
   .type-btn {
     flex: 1; border-radius: 12px; border: 1px solid var(--border);
@@ -90,10 +81,7 @@
     padding: 18px; border: 1px solid var(--border);
     display: flex; flex-direction: column; gap: 12px;
   }
-  .add-form label {
-    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 5px; display: block;
-  }
+  .add-form label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; display: block; }
   .add-form input, .add-form textarea {
     background: var(--surface2); border: 1px solid var(--border);
     border-radius: 10px; color: var(--text);
@@ -163,17 +151,9 @@
   .entry-date { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); margin-top: 8px; }
   .empty { text-align: center; color: var(--muted); font-size: 14px; padding: 36px 0; }
   .empty div { font-size: 30px; margin-bottom: 8px; }
-  .modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.7); z-index: 300;
-    align-items: flex-end; justify-content: center;
-  }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 300; align-items: flex-end; justify-content: center; }
   .modal-overlay.show { display: flex; }
-  .modal {
-    background: var(--surface); border-radius: 20px 20px 0 0;
-    padding: 24px 24px 44px; width: 100%; max-width: 430px;
-    border-top: 1px solid var(--border); animation: slideUp 0.25s ease;
-  }
+  .modal { background: var(--surface); border-radius: 20px 20px 0 0; padding: 24px 24px 44px; width: 100%; max-width: 430px; border-top: 1px solid var(--border); animation: slideUp 0.25s ease; }
   @keyframes slideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
   .modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
   .modal p  { color: var(--muted); font-size: 14px; margin-bottom: 20px; line-height: 1.5; }
@@ -181,22 +161,11 @@
   .modal-confirm { flex:1; background:var(--danger); color:#fff; border:none; border-radius:12px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; padding:14px; cursor:pointer; }
   .modal-cancel  { flex:1; background:var(--surface2); color:var(--muted); border:1px solid var(--border); border-radius:12px; font-family:'DM Sans',sans-serif; font-size:15px; padding:14px; cursor:pointer; }
   .modal-accent  { flex:1; background:rgba(200,245,90,0.12); color:var(--accent); border:1px solid var(--accent); border-radius:12px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; padding:14px; cursor:pointer; }
-  .drop-zone {
-    border: 2px dashed var(--border); border-radius: 14px; padding: 28px 16px;
-    text-align: center; color: var(--muted); font-size: 14px;
-    margin-bottom: 16px; cursor: pointer; transition: border-color 0.2s, color 0.2s;
-  }
+  .drop-zone { border: 2px dashed var(--border); border-radius: 14px; padding: 28px 16px; text-align: center; color: var(--muted); font-size: 14px; margin-bottom: 16px; cursor: pointer; transition: border-color 0.2s, color 0.2s; }
   .drop-zone:hover { border-color: #7b7bff; color: #a0a0ff; }
   .drop-zone .dz-icon { font-size: 28px; margin-bottom: 8px; }
   .drop-zone input[type=file] { display: none; }
-  .toast {
-    position: fixed; bottom: 30px; left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: var(--accent); color: var(--bg);
-    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
-    padding: 10px 20px; border-radius: 100px; opacity: 0;
-    transition: all 0.3s; pointer-events: none; white-space: nowrap; z-index: 400;
-  }
+  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--accent); color: var(--bg); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; padding: 10px 20px; border-radius: 100px; opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap; z-index: 400; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
@@ -231,7 +200,6 @@
     <button class="type-btn active-purchase" id="typePurchase" onclick="setType('purchase')">🛍 Spend</button>
     <button class="type-btn" id="typePayment" onclick="setType('payment')">💵 Pay</button>
   </div>
-
   <div class="add-form">
     <div id="titleField">
       <label>What did you buy?</label>
@@ -263,17 +231,14 @@
     <h2 id="listCount">History</h2>
     <button class="clear-all" onclick="clearAll()">Clear All</button>
   </div>
-
   <div class="filter-tabs">
     <button class="ftab active" id="f-all"     onclick="setFilter('all')">All</button>
     <button class="ftab"        id="f-purchase" onclick="setFilter('purchase')">Purchases</button>
     <button class="ftab"        id="f-payment"  onclick="setFilter('payment')">Payments</button>
   </div>
-
   <div id="entryList"></div>
 </div>
 
-<!-- Clear Modal -->
 <div class="modal-overlay" id="confirmOverlay">
   <div class="modal">
     <h3>Clear All Entries?</h3>
@@ -285,7 +250,6 @@
   </div>
 </div>
 
-<!-- Import Modal -->
 <div class="modal-overlay" id="importOverlay">
   <div class="modal">
     <h3>⬆ Import Backup</h3>
@@ -301,7 +265,6 @@
   </div>
 </div>
 
-<!-- Import Confirm Modal -->
 <div class="modal-overlay" id="importConfirmOverlay">
   <div class="modal">
     <h3>Confirm Import</h3>
@@ -319,18 +282,15 @@
   const DB = "https://mom-s-tab-default-rtdb.firebaseio.com";
 
   let entries       = [];
-  let lastSnapshot  = '';   // ← fingerprint of last data, used to skip re-renders
   let currentType   = 'purchase';
   let currentFilter = 'all';
   let pendingImport = null;
-  let newKeys       = new Set(); // tracks newly added keys for animation
+  let lastHash      = '';
 
   // ── Helpers ──
   function todayDate() {
     const d = new Date();
-    return d.getFullYear() + '-' +
-      String(d.getMonth()+1).padStart(2,'0') + '-' +
-      String(d.getDate()).padStart(2,'0');
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
   }
   function formatDate(d) {
     if (!d) return '';
@@ -338,55 +298,104 @@
     const mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     return mo[+m-1] + ' ' + +day + ', ' + y;
   }
-  function fmt(n)  { return '$' + Math.abs(n).toFixed(2); }
-  function esc(s)  {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
+  function fmt(n) { return '$' + Math.abs(n).toFixed(2); }
+  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
   // ── Firebase REST ──
-  async function fbGet(path)         { const r = await fetch(DB+path+'.json'); return r.json(); }
-  async function fbPush(path, data)  { const r = await fetch(DB+path+'.json', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }); return r.json(); }
-  async function fbDelete(path)      { await fetch(DB+path+'.json', { method:'DELETE' }); }
-  async function fbSet(path, data)   { await fetch(DB+path+'.json', { method:'PUT',    headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }); }
+  async function fbGet(path)        { const r = await fetch(DB+path+'.json'); return r.json(); }
+  async function fbPush(path, data) { const r = await fetch(DB+path+'.json', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); return r.json(); }
+  async function fbDelete(path)     { await fetch(DB+path+'.json', {method:'DELETE'}); }
+  async function fbSet(path, data)  { await fetch(DB+path+'.json', {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); }
 
-  // ── Fetch & smart-diff ──
-  async function fetchEntries(forceRender = false) {
+  // ── Fetch — only re-render when data actually changed ──
+  async function fetchEntries(force = false) {
     try {
       const data = await fbGet('/entries');
+      const hash = JSON.stringify(data);          // full data hash
+      document.getElementById('syncDot').classList.add('connected');
 
-      // Build a simple fingerprint string from keys+amounts
-      const snapshot = data ? JSON.stringify(Object.keys(data).sort()) : 'empty';
+      if (hash === lastHash && !force) return;    // nothing changed — do nothing at all
+      lastHash = hash;
 
-      // Only re-render if something actually changed
-      if (snapshot === lastSnapshot && !forceRender) {
-        document.getElementById('syncDot').classList.add('connected');
-        return;
-      }
-
-      // Figure out which keys are brand new (for slide-in animation)
-      const oldKeys = new Set(entries.map(e => e.firebaseKey));
-      newKeys = new Set();
-
+      const prevKeys = new Set(entries.map(e => e.firebaseKey));
       entries = [];
       if (data) {
-        Object.entries(data).forEach(([key, val]) => {
-          entries.push({ firebaseKey: key, ...val });
-          if (!oldKeys.has(key)) newKeys.add(key);
-        });
+        Object.entries(data).forEach(([key, val]) => entries.push({ firebaseKey: key, ...val }));
         entries.sort((a,b) => String(b.id).localeCompare(String(a.id)));
       }
 
-      lastSnapshot = snapshot;
-      renderEntries();
+      diffRender(prevKeys);   // smart DOM update — no full wipe
       updateBalance();
-      document.getElementById('syncDot').classList.add('connected');
-    } catch(e) {
+    } catch {
       document.getElementById('syncDot').classList.remove('connected');
     }
   }
 
   fetchEntries(true);
-  setInterval(fetchEntries, 4000);
+  setInterval(fetchEntries, 5000);
+
+  // ── DOM diffing — adds/removes only what changed, no blink ──
+  function diffRender(prevKeys) {
+    const list     = document.getElementById('entryList');
+    const filtered = currentFilter === 'all' ? entries : entries.filter(e => e.type === currentFilter);
+
+    document.getElementById('listCount').textContent =
+      filtered.length + ' Entr' + (filtered.length === 1 ? 'y' : 'ies');
+
+    // If empty, just set the empty state
+    if (!filtered.length) {
+      list.innerHTML = `<div class="empty"><div>${
+        currentFilter==='purchase'?'🛍':currentFilter==='payment'?'💵':'📋'
+      }</div>${
+        currentFilter==='purchase'?'No purchases yet':currentFilter==='payment'?'No payments yet':'No entries yet'
+      }</div>`;
+      return;
+    }
+
+    const existingKeys = new Set();
+    list.querySelectorAll('.entry-item').forEach(el => existingKeys.add(el.dataset.key));
+
+    // Remove cards that no longer exist
+    list.querySelectorAll('.entry-item').forEach(el => {
+      if (!filtered.find(e => e.firebaseKey === el.dataset.key)) el.remove();
+    });
+
+    // Add new cards, update nothing (existing cards stay untouched = no blink)
+    filtered.forEach((e, i) => {
+      if (existingKeys.has(e.firebaseKey)) return; // already in DOM, skip
+
+      const isNew = !prevKeys.has(e.firebaseKey);
+      const card  = document.createElement('div');
+      card.className   = `entry-item ${e.type}${isNew ? ' new-entry' : ''}`;
+      card.dataset.key = e.firebaseKey;
+      card.innerHTML   = cardHTML(e);
+
+      // Insert at correct position
+      const allCards = list.querySelectorAll('.entry-item');
+      if (i === 0 || allCards.length === 0) {
+        list.prepend(card);
+      } else {
+        const ref = allCards[i];
+        ref ? list.insertBefore(card, ref) : list.appendChild(card);
+      }
+    });
+  }
+
+  function cardHTML(e) {
+    return `
+      <div class="entry-top">
+        <div class="entry-left">
+          <div class="entry-type-tag ${e.type}">${e.type==='purchase'?'🛍 Purchase':'💵 Payment'}</div>
+          <div class="entry-title">${esc(e.title)}</div>
+          ${e.note?`<div class="entry-note">${esc(e.note)}</div>`:''}
+          <div class="entry-date">📅 ${formatDate(e.date)}</div>
+        </div>
+        <div class="entry-right">
+          <div class="entry-amount ${e.type}">${e.type==='purchase'?'+':'−'}${fmt(e.amount)}</div>
+          <button class="del-btn" onclick="deleteEntry('${e.firebaseKey}')">✕</button>
+        </div>
+      </div>`;
+  }
 
   // ── Type Toggle ──
   window.setType = function(t) {
@@ -405,7 +414,8 @@
     currentFilter = f;
     ['all','purchase','payment'].forEach(x =>
       document.getElementById('f-'+x).classList.toggle('active', x===f));
-    renderEntries();
+    lastHash = ''; // force re-render for filter change
+    fetchEntries(true);
   };
 
   // ── Add Entry ──
@@ -424,16 +434,11 @@
     if (currentType === 'purchase' && !title) return toast('Enter what you bought!');
     if (isNaN(amount) || amount <= 0)         return toast('Enter a valid amount!');
 
-    btn.disabled    = true;
+    btn.disabled = true;
     btn.textContent = 'Saving...';
 
     try {
-      const result = await fbPush('/entries', {
-        id: Date.now(), type: currentType, title, amount, date, note
-      });
-
-      // Mark this key as new so it gets the animation
-      if (result && result.name) newKeys.add(result.name);
+      await fbPush('/entries', { id: Date.now(), type: currentType, title, amount, date, note });
 
       if (currentType === 'purchase') titleEl.value = '';
       amtEl.value  = '';
@@ -441,8 +446,9 @@
       dateEl.value = todayDate();
 
       toast(currentType === 'purchase' ? '🛍 Purchase added!' : '💵 Payment recorded!');
+      lastHash = '';
       await fetchEntries(true);
-    } catch(e) {
+    } catch {
       toast('❌ Failed to save! Check connection.');
     }
 
@@ -453,7 +459,7 @@
   // ── Delete ──
   window.deleteEntry = async function(key) {
     await fbDelete('/entries/' + key);
-    lastSnapshot = ''; // force re-render after delete
+    lastHash = '';
     await fetchEntries(true);
   };
 
@@ -464,7 +470,7 @@
   };
   window.confirmClear = async function() {
     await fbSet('/entries', null);
-    lastSnapshot = '';
+    lastHash = '';
     document.getElementById('confirmOverlay').classList.remove('show');
     await fetchEntries(true);
     toast('All entries cleared!');
@@ -478,10 +484,7 @@
     if (!entries.length) return toast('No entries to export!');
     const clean = entries.map(({ firebaseKey, ...r }) => r);
     const blob  = new Blob([JSON.stringify({ exported: new Date().toISOString(), entries: clean }, null, 2)], { type:'application/json' });
-    const a     = Object.assign(document.createElement('a'), {
-      href: URL.createObjectURL(blob),
-      download: 'moms-tab-backup-' + todayDate() + '.json'
-    });
+    const a     = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'moms-tab-backup-' + todayDate() + '.json' });
     a.click();
     URL.revokeObjectURL(a.href);
     toast('✅ Backup downloaded!');
@@ -522,7 +525,7 @@
     }
     toast(`✅ Imported ${pendingImport.length} entries!`);
     pendingImport = null;
-    lastSnapshot  = '';
+    lastHash = '';
     document.getElementById('importConfirmOverlay').classList.remove('show');
     await fetchEntries(true);
   };
@@ -551,40 +554,6 @@
       noteEl.textContent = 'Mom still owes you';
       noteEl.className   = 'balance-note owes';
     }
-  }
-
-  // ── Render (no blink — only animates truly new items) ──
-  function renderEntries() {
-    const list     = document.getElementById('entryList');
-    const filtered = currentFilter === 'all' ? entries : entries.filter(e=>e.type===currentFilter);
-
-    document.getElementById('listCount').textContent =
-      filtered.length + ' Entr' + (filtered.length===1?'y':'ies');
-
-    if (!filtered.length) {
-      list.innerHTML = `<div class="empty"><div>${
-        currentFilter==='purchase'?'🛍':currentFilter==='payment'?'💵':'📋'
-      }</div>${
-        currentFilter==='purchase'?'No purchases yet':currentFilter==='payment'?'No payments yet':'No entries yet'
-      }</div>`;
-      return;
-    }
-
-    list.innerHTML = filtered.map(e => `
-      <div class="entry-item ${e.type}${newKeys.has(e.firebaseKey) ? ' new-entry' : ''}">
-        <div class="entry-top">
-          <div class="entry-left">
-            <div class="entry-type-tag ${e.type}">${e.type==='purchase'?'🛍 Purchase':'💵 Payment'}</div>
-            <div class="entry-title">${esc(e.title)}</div>
-            ${e.note?`<div class="entry-note">${esc(e.note)}</div>`:''}
-            <div class="entry-date">📅 ${formatDate(e.date)}</div>
-          </div>
-          <div class="entry-right">
-            <div class="entry-amount ${e.type}">${e.type==='purchase'?'+':'−'}${fmt(e.amount)}</div>
-            <button class="del-btn" onclick="deleteEntry('${e.firebaseKey}')">✕</button>
-          </div>
-        </div>
-      </div>`).join('');
   }
 
   // ── Toast ──
