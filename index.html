@@ -209,7 +209,7 @@
   .add-btn.payment { background: var(--green); color: #0e0e12; }
   .add-btn.payment:active { background: #40d080; }
 
-  /* ── Backup Bar ── */
+  /* Backup Bar */
   .backup-bar {
     display: flex;
     gap: 8px;
@@ -384,7 +384,6 @@
   }
   .empty div { font-size: 30px; margin-bottom: 8px; }
 
-  /* ── Modals ── */
   .modal-overlay {
     display: none;
     position: fixed;
@@ -598,6 +597,7 @@
   let currentType   = 'purchase';
   let currentFilter = 'all';
   let pendingImportData = null;
+  let isAdding = false; // ← prevents double-submit lock
 
   // Real-time listener
   onValue(entriesRef, snap => {
@@ -609,7 +609,13 @@
   });
 
   // Helpers
-  function todayDate() { return new Date().toISOString().split('T')[0]; }
+  function todayDate() {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
   function formatDate(d) {
     if (!d) return '';
     const [y, m, day] = d.split('-');
@@ -619,6 +625,9 @@
   function fmt(n) { return '$' + Math.abs(n).toFixed(2); }
   function esc(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function uniqueId() {
+    return Date.now() + '_' + Math.random().toString(36).slice(2, 7);
   }
 
   // Type Toggle
@@ -641,23 +650,50 @@
     renderEntries();
   };
 
-  // Add Entry
+  // ── Add Entry (FIXED) ──
   window.addEntry = function() {
-    const title  = currentType === 'payment' ? 'Payment' : document.getElementById('entryTitle').value.trim();
-    const amount = parseFloat(document.getElementById('entryAmount').value);
-    const date   = document.getElementById('entryDate').value || todayDate();
-    const note   = document.getElementById('entryNote').value.trim();
+    if (isAdding) return; // prevent rapid double taps
+
+    const titleEl  = document.getElementById('entryTitle');
+    const amountEl = document.getElementById('entryAmount');
+    const dateEl   = document.getElementById('entryDate');
+    const noteEl   = document.getElementById('entryNote');
+
+    const title  = currentType === 'payment' ? 'Payment' : titleEl.value.trim();
+    const amount = parseFloat(amountEl.value);
+    const date   = dateEl.value || todayDate();
+    const note   = noteEl.value.trim();
 
     if (currentType === 'purchase' && !title) return toast('Enter what you bought!');
     if (isNaN(amount) || amount <= 0) return toast('Enter a valid amount!');
 
-    push(entriesRef, { id: Date.now(), type: currentType, title, amount, date, note });
+    isAdding = true;
 
-    if (currentType === 'purchase') document.getElementById('entryTitle').value = '';
-    document.getElementById('entryAmount').value = '';
-    document.getElementById('entryDate').value   = todayDate();
-    document.getElementById('entryNote').value   = '';
-    toast(currentType === 'purchase' ? '🛍 Purchase added!' : '💵 Payment recorded!');
+    const entry = {
+      id: uniqueId(),       // always unique even if added fast
+      type: currentType,
+      title,
+      amount,
+      date,
+      note
+    };
+
+    push(entriesRef, entry)
+      .then(() => {
+        // Only clear fields AFTER Firebase confirms the write
+        if (currentType === 'purchase') titleEl.value = '';
+        amountEl.value = '';
+        noteEl.value   = '';
+        // Reset date to today fresh
+        dateEl.value = todayDate();
+        toast(currentType === 'purchase' ? '🛍 Purchase added!' : '💵 Payment recorded!');
+      })
+      .catch(() => {
+        toast('❌ Failed to save. Check connection!');
+      })
+      .finally(() => {
+        isAdding = false; // unlock for next entry
+      });
   };
 
   // Delete
@@ -679,7 +715,7 @@
     document.getElementById('confirmOverlay').classList.remove('show');
   };
 
-  // ── Export Backup ──
+  // Export Backup
   window.exportBackup = function() {
     if (!entries.length) return toast('No entries to export!');
     const clean = entries.map(({ firebaseKey, ...rest }) => rest);
@@ -694,7 +730,7 @@
     toast('✅ Backup downloaded!');
   };
 
-  // ── Import Backup ──
+  // Import Backup
   window.openImport = function() {
     document.getElementById('fileInput').value = '';
     document.getElementById('importOverlay').classList.add('show');
@@ -728,7 +764,7 @@
     set(entriesRef, null).then(() => {
       pendingImportData.forEach(entry => {
         const { firebaseKey, ...clean } = entry;
-        push(entriesRef, { ...clean, id: clean.id || Date.now() });
+        push(entriesRef, { ...clean, id: clean.id || uniqueId() });
       });
       toast(`✅ Imported ${pendingImportData.length} entries!`);
       pendingImportData = null;
@@ -811,7 +847,7 @@
     toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
   };
 
-  // Init
+  // Init - set today's date
   document.getElementById('entryDate').value = todayDate();
 </script>
 </body>
