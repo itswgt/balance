@@ -111,7 +111,7 @@
   .add-btn.purchase { background: var(--red); color: #fff; }
   .add-btn.purchase:active { background: #d04080; }
   .add-btn.payment  { background: var(--green); color: #0e0e12; }
-  .add-btn.payment:active  { background: #40d080; }
+  .add-btn.payment:active { background: #40d080; }
   .add-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .backup-bar { display: flex; gap: 8px; margin: 14px 0 0; }
   .backup-btn {
@@ -140,11 +140,10 @@
   .entry-item {
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 14px; padding: 14px 16px; margin-bottom: 10px;
-    animation: slideIn 0.22s ease; position: relative; overflow: hidden;
+    position: relative; overflow: hidden;
   }
-  .entry-item::before {
-    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
-  }
+  .entry-item.new-entry { animation: slideIn 0.22s ease; }
+  .entry-item::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
   .entry-item.purchase::before { background: var(--red); }
   .entry-item.payment::before  { background: var(--green); }
   @keyframes slideIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
@@ -266,9 +265,9 @@
   </div>
 
   <div class="filter-tabs">
-    <button class="ftab active" id="f-all"      onclick="setFilter('all')">All</button>
-    <button class="ftab"        id="f-purchase"  onclick="setFilter('purchase')">Purchases</button>
-    <button class="ftab"        id="f-payment"   onclick="setFilter('payment')">Payments</button>
+    <button class="ftab active" id="f-all"     onclick="setFilter('all')">All</button>
+    <button class="ftab"        id="f-purchase" onclick="setFilter('purchase')">Purchases</button>
+    <button class="ftab"        id="f-payment"  onclick="setFilter('payment')">Payments</button>
   </div>
 
   <div id="entryList"></div>
@@ -317,13 +316,14 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  // ── Config ──
   const DB = "https://mom-s-tab-default-rtdb.firebaseio.com";
 
   let entries       = [];
+  let lastSnapshot  = '';   // ← fingerprint of last data, used to skip re-renders
   let currentType   = 'purchase';
   let currentFilter = 'all';
   let pendingImport = null;
+  let newKeys       = new Set(); // tracks newly added keys for animation
 
   // ── Helpers ──
   function todayDate() {
@@ -338,46 +338,45 @@
     const mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     return mo[+m-1] + ' ' + +day + ', ' + y;
   }
-  function fmt(n) { return '$' + Math.abs(n).toFixed(2); }
-  function esc(s) {
+  function fmt(n)  { return '$' + Math.abs(n).toFixed(2); }
+  function esc(s)  {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  // ── Firebase REST helpers ──
-  async function fbGet(path) {
-    const r = await fetch(DB + path + '.json');
-    return r.json();
-  }
-  async function fbPush(path, data) {
-    const r = await fetch(DB + path + '.json', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    return r.json();
-  }
-  async function fbDelete(path) {
-    await fetch(DB + path + '.json', { method: 'DELETE' });
-  }
-  async function fbSet(path, data) {
-    await fetch(DB + path + '.json', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-  }
+  // ── Firebase REST ──
+  async function fbGet(path)         { const r = await fetch(DB+path+'.json'); return r.json(); }
+  async function fbPush(path, data)  { const r = await fetch(DB+path+'.json', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }); return r.json(); }
+  async function fbDelete(path)      { await fetch(DB+path+'.json', { method:'DELETE' }); }
+  async function fbSet(path, data)   { await fetch(DB+path+'.json', { method:'PUT',    headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }); }
 
-  // ── Real-time polling (every 3 seconds) ──
-  async function fetchEntries() {
+  // ── Fetch & smart-diff ──
+  async function fetchEntries(forceRender = false) {
     try {
       const data = await fbGet('/entries');
+
+      // Build a simple fingerprint string from keys+amounts
+      const snapshot = data ? JSON.stringify(Object.keys(data).sort()) : 'empty';
+
+      // Only re-render if something actually changed
+      if (snapshot === lastSnapshot && !forceRender) {
+        document.getElementById('syncDot').classList.add('connected');
+        return;
+      }
+
+      // Figure out which keys are brand new (for slide-in animation)
+      const oldKeys = new Set(entries.map(e => e.firebaseKey));
+      newKeys = new Set();
+
       entries = [];
       if (data) {
         Object.entries(data).forEach(([key, val]) => {
           entries.push({ firebaseKey: key, ...val });
+          if (!oldKeys.has(key)) newKeys.add(key);
         });
         entries.sort((a,b) => String(b.id).localeCompare(String(a.id)));
       }
+
+      lastSnapshot = snapshot;
       renderEntries();
       updateBalance();
       document.getElementById('syncDot').classList.add('connected');
@@ -386,9 +385,8 @@
     }
   }
 
-  // Fetch immediately then every 3s
-  fetchEntries();
-  setInterval(fetchEntries, 3000);
+  fetchEntries(true);
+  setInterval(fetchEntries, 4000);
 
   // ── Type Toggle ──
   window.setType = function(t) {
@@ -426,44 +424,37 @@
     if (currentType === 'purchase' && !title) return toast('Enter what you bought!');
     if (isNaN(amount) || amount <= 0)         return toast('Enter a valid amount!');
 
-    // Disable button while saving
-    btn.disabled = true;
+    btn.disabled    = true;
     btn.textContent = 'Saving...';
 
     try {
-      await fbPush('/entries', {
-        id:    Date.now(),
-        type:  currentType,
-        title,
-        amount,
-        date,
-        note
+      const result = await fbPush('/entries', {
+        id: Date.now(), type: currentType, title, amount, date, note
       });
 
-      // Clear fields
+      // Mark this key as new so it gets the animation
+      if (result && result.name) newKeys.add(result.name);
+
       if (currentType === 'purchase') titleEl.value = '';
       amtEl.value  = '';
       noteEl.value = '';
       dateEl.value = todayDate();
 
       toast(currentType === 'purchase' ? '🛍 Purchase added!' : '💵 Payment recorded!');
-
-      // Immediately refresh list
-      await fetchEntries();
-
+      await fetchEntries(true);
     } catch(e) {
       toast('❌ Failed to save! Check connection.');
     }
 
-    // Re-enable button
-    btn.disabled = false;
+    btn.disabled    = false;
     btn.textContent = currentType === 'purchase' ? '+ Add Purchase' : '+ Record Payment';
   };
 
   // ── Delete ──
   window.deleteEntry = async function(key) {
     await fbDelete('/entries/' + key);
-    await fetchEntries();
+    lastSnapshot = ''; // force re-render after delete
+    await fetchEntries(true);
   };
 
   // ── Clear All ──
@@ -473,8 +464,9 @@
   };
   window.confirmClear = async function() {
     await fbSet('/entries', null);
+    lastSnapshot = '';
     document.getElementById('confirmOverlay').classList.remove('show');
-    await fetchEntries();
+    await fetchEntries(true);
     toast('All entries cleared!');
   };
   window.cancelClear = function() {
@@ -485,8 +477,11 @@
   window.exportBackup = function() {
     if (!entries.length) return toast('No entries to export!');
     const clean = entries.map(({ firebaseKey, ...r }) => r);
-    const blob  = new Blob([JSON.stringify({ exported: new Date().toISOString(), entries: clean }, null, 2)], { type: 'application/json' });
-    const a     = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'moms-tab-backup-' + todayDate() + '.json' });
+    const blob  = new Blob([JSON.stringify({ exported: new Date().toISOString(), entries: clean }, null, 2)], { type:'application/json' });
+    const a     = Object.assign(document.createElement('a'), {
+      href: URL.createObjectURL(blob),
+      download: 'moms-tab-backup-' + todayDate() + '.json'
+    });
     a.click();
     URL.revokeObjectURL(a.href);
     toast('✅ Backup downloaded!');
@@ -527,8 +522,9 @@
     }
     toast(`✅ Imported ${pendingImport.length} entries!`);
     pendingImport = null;
+    lastSnapshot  = '';
     document.getElementById('importConfirmOverlay').classList.remove('show');
-    await fetchEntries();
+    await fetchEntries(true);
   };
   window.cancelImport = function() {
     pendingImport = null;
@@ -557,12 +553,14 @@
     }
   }
 
-  // ── Render ──
+  // ── Render (no blink — only animates truly new items) ──
   function renderEntries() {
     const list     = document.getElementById('entryList');
     const filtered = currentFilter === 'all' ? entries : entries.filter(e=>e.type===currentFilter);
+
     document.getElementById('listCount').textContent =
       filtered.length + ' Entr' + (filtered.length===1?'y':'ies');
+
     if (!filtered.length) {
       list.innerHTML = `<div class="empty"><div>${
         currentFilter==='purchase'?'🛍':currentFilter==='payment'?'💵':'📋'
@@ -571,8 +569,9 @@
       }</div>`;
       return;
     }
+
     list.innerHTML = filtered.map(e => `
-      <div class="entry-item ${e.type}">
+      <div class="entry-item ${e.type}${newKeys.has(e.firebaseKey) ? ' new-entry' : ''}">
         <div class="entry-top">
           <div class="entry-left">
             <div class="entry-type-tag ${e.type}">${e.type==='purchase'?'🛍 Purchase':'💵 Payment'}</div>
