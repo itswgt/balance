@@ -55,6 +55,17 @@
     color: var(--muted);
     margin-top: 2px;
   }
+  .sync-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--muted);
+    margin-left: 7px;
+    vertical-align: middle;
+    transition: background 0.3s;
+  }
+  .sync-dot.connected { background: var(--green); }
 
   .balance-banner {
     margin: 0 20px 4px;
@@ -192,12 +203,46 @@
     padding: 14px;
     cursor: pointer;
     transition: all 0.15s;
-    color: #0e0e12;
   }
   .add-btn.purchase { background: var(--red); color: #fff; }
   .add-btn.purchase:active { background: #d04080; }
-  .add-btn.payment { background: var(--green); }
+  .add-btn.payment { background: var(--green); color: #0e0e12; }
   .add-btn.payment:active { background: #40d080; }
+
+  /* ── Backup Bar ── */
+  .backup-bar {
+    display: flex;
+    gap: 8px;
+    margin: 14px 0 0;
+  }
+  .backup-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 11px 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .backup-btn:active { opacity: 0.7; }
+  .backup-btn.export-btn {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(200,245,90,0.07);
+  }
+  .backup-btn.import-btn {
+    border-color: #7b7bff;
+    color: #a0a0ff;
+    background: rgba(123,123,255,0.07);
+  }
 
   .list-header {
     display: flex;
@@ -282,7 +327,6 @@
   }
   .entry-type-tag.purchase { color: var(--red); }
   .entry-type-tag.payment { color: var(--green); }
-
   .entry-title {
     font-size: 15px;
     font-weight: 600;
@@ -340,6 +384,7 @@
   }
   .empty div { font-size: 30px; margin-bottom: 8px; }
 
+  /* ── Modals ── */
   .modal-overlay {
     display: none;
     position: fixed;
@@ -363,36 +408,40 @@
     from { transform: translateY(100%); }
     to   { transform: translateY(0); }
   }
-  .modal h3 {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: var(--text);
-  }
+  .modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
+  .modal p  { color: var(--muted); font-size: 14px; margin-bottom: 20px; line-height: 1.5; }
   .modal-btns { display: flex; gap: 10px; }
   .modal-confirm {
-    flex: 1;
-    background: var(--danger);
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    font-weight: 600;
-    padding: 14px;
-    cursor: pointer;
+    flex: 1; background: var(--danger); color: #fff; border: none;
+    border-radius: 12px; font-family: 'DM Sans', sans-serif;
+    font-size: 15px; font-weight: 600; padding: 14px; cursor: pointer;
   }
   .modal-cancel {
-    flex: 1;
-    background: var(--surface2);
-    color: var(--muted);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    padding: 14px;
-    cursor: pointer;
+    flex: 1; background: var(--surface2); color: var(--muted);
+    border: 1px solid var(--border); border-radius: 12px;
+    font-family: 'DM Sans', sans-serif; font-size: 15px; padding: 14px; cursor: pointer;
   }
+  .modal-accent {
+    flex: 1; background: rgba(200,245,90,0.12); color: var(--accent);
+    border: 1px solid var(--accent); border-radius: 12px;
+    font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600;
+    padding: 14px; cursor: pointer;
+  }
+
+  .drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 14px;
+    padding: 28px 16px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .drop-zone:hover { border-color: #7b7bff; color: #a0a0ff; }
+  .drop-zone .dz-icon { font-size: 28px; margin-bottom: 8px; }
+  .drop-zone input[type=file] { display: none; }
 
   .toast {
     position: fixed;
@@ -410,7 +459,7 @@
     transition: all 0.3s;
     pointer-events: none;
     white-space: nowrap;
-    z-index: 200;
+    z-index: 400;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
@@ -418,7 +467,7 @@
 <body>
 
 <div class="header">
-  <h1>👩 Mom's Tab</h1>
+  <h1>👩 Mom's Tab <span class="sync-dot" id="syncDot"></span></h1>
   <div class="subtitle">Track what she owes you</div>
 </div>
 
@@ -470,6 +519,12 @@
     <button class="add-btn purchase" id="addBtn" onclick="addEntry()">+ Add Purchase</button>
   </div>
 
+  <!-- Backup Buttons -->
+  <div class="backup-bar">
+    <button class="backup-btn export-btn" onclick="exportBackup()">⬇ Export Backup</button>
+    <button class="backup-btn import-btn" onclick="openImport()">⬆ Import Backup</button>
+  </div>
+
   <div class="list-header">
     <h2 id="listCount">History</h2>
     <button class="clear-all" onclick="clearAll()">Clear All</button>
@@ -484,10 +539,11 @@
   <div id="entryList"></div>
 </div>
 
+<!-- Clear All Modal -->
 <div class="modal-overlay" id="confirmOverlay">
   <div class="modal">
     <h3>Clear All Entries?</h3>
-    <p style="color:var(--muted);font-size:14px;margin-bottom:20px;">This will delete everything and cannot be undone.</p>
+    <p>This will delete everything from Firebase and cannot be undone.</p>
     <div class="modal-btns">
       <button class="modal-cancel" onclick="cancelClear()">Cancel</button>
       <button class="modal-confirm" onclick="confirmClear()">Yes, Clear All</button>
@@ -495,158 +551,268 @@
   </div>
 </div>
 
+<!-- Import Modal -->
+<div class="modal-overlay" id="importOverlay">
+  <div class="modal">
+    <h3>⬆ Import Backup</h3>
+    <p>Choose a backup JSON file. This will <strong style="color:var(--danger)">replace</strong> all current entries.</p>
+    <div class="drop-zone" onclick="document.getElementById('fileInput').click()">
+      <div class="dz-icon">📂</div>
+      Tap to choose a backup file
+      <input type="file" id="fileInput" accept=".json" onchange="handleFileSelect(event)">
+    </div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeImport()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import Confirm Modal -->
+<div class="modal-overlay" id="importConfirmOverlay">
+  <div class="modal">
+    <h3>Confirm Import</h3>
+    <p id="importConfirmMsg">Replace all entries with backup?</p>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="cancelImport()">Cancel</button>
+      <button class="modal-accent" onclick="confirmImport()">Yes, Import</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
-<script>
-let entries = JSON.parse(localStorage.getItem('mom_tab_v1') || '[]');
-let currentType = 'purchase';
-let currentFilter = 'all';
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, push, remove, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-function setType(t) {
-  currentType = t;
-  const isPurchase = t === 'purchase';
-  document.getElementById('typePurchase').className = 'type-btn' + (isPurchase ? ' active-purchase' : '');
-  document.getElementById('typePayment').className  = 'type-btn' + (!isPurchase ? ' active-payment' : '');
-  document.getElementById('titleField').style.display = isPurchase ? 'block' : 'none';
-  document.getElementById('formTitleLabel').textContent = 'What did you buy?';
-  document.getElementById('entryTitle').placeholder = 'e.g. Groceries, Medicine...';
-  const btn = document.getElementById('addBtn');
-  btn.textContent = isPurchase ? '+ Add Purchase' : '+ Record Payment';
-  btn.className = 'add-btn ' + t;
-}
+  const app = initializeApp({ databaseURL: "https://mom-s-tab-default-rtdb.firebaseio.com/" });
+  const db  = getDatabase(app);
+  const entriesRef = ref(db, 'entries');
 
-function setFilter(f) {
-  currentFilter = f;
-  ['all','purchase','payment'].forEach(x =>
-    document.getElementById('f-' + x).classList.toggle('active', x === f));
-  renderEntries();
-}
+  // Connection dot
+  onValue(ref(db, '.info/connected'), snap => {
+    document.getElementById('syncDot').classList.toggle('connected', snap.val() === true);
+  });
 
-function save() { localStorage.setItem('mom_tab_v1', JSON.stringify(entries)); }
-function todayDate() { return new Date().toISOString().split('T')[0]; }
-function formatDate(d) {
-  if (!d) return '';
-  const [y, m, day] = d.split('-');
-  const mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return mo[parseInt(m)-1] + ' ' + parseInt(day) + ', ' + y;
-}
-function fmt(n) { return '$' + Math.abs(n).toFixed(2); }
+  let entries = [];
+  let currentType   = 'purchase';
+  let currentFilter = 'all';
+  let pendingImportData = null;
 
-function addEntry() {
-  const title  = currentType === 'payment' ? 'Payment' : document.getElementById('entryTitle').value.trim();
-  const amount = parseFloat(document.getElementById('entryAmount').value);
-  const date   = document.getElementById('entryDate').value || todayDate();
-  const note   = document.getElementById('entryNote').value.trim();
+  // Real-time listener
+  onValue(entriesRef, snap => {
+    entries = [];
+    snap.forEach(child => entries.push({ firebaseKey: child.key, ...child.val() }));
+    entries.sort((a, b) => b.id - a.id);
+    renderEntries();
+    updateBalance();
+  });
 
-  if (currentType === 'purchase' && !title) return toast('Enter what you bought!');
-  if (isNaN(amount) || amount <= 0) return toast('Enter a valid amount!');
-
-  entries.unshift({ id: Date.now(), type: currentType, title, amount, date, note });
-  save();
-  renderEntries();
-  updateBalance();
-
-  if (currentType === 'purchase') document.getElementById('entryTitle').value = '';
-  document.getElementById('entryAmount').value = '';
-  document.getElementById('entryDate').value   = todayDate();
-  document.getElementById('entryNote').value   = '';
-  toast(currentType === 'purchase' ? '🛍 Purchase added!' : '💵 Payment recorded!');
-}
-
-function deleteEntry(id) {
-  entries = entries.filter(e => e.id !== id);
-  save(); renderEntries(); updateBalance();
-}
-
-function clearAll() {
-  if (!entries.length) return toast('Nothing to clear!');
-  document.getElementById('confirmOverlay').classList.add('show');
-}
-function confirmClear() {
-  entries = []; save(); renderEntries(); updateBalance();
-  document.getElementById('confirmOverlay').classList.remove('show');
-  toast('All entries cleared!');
-}
-function cancelClear() {
-  document.getElementById('confirmOverlay').classList.remove('show');
-}
-
-function updateBalance() {
-  const spent    = entries.filter(e => e.type === 'purchase').reduce((s,e) => s + e.amount, 0);
-  const received = entries.filter(e => e.type === 'payment').reduce((s,e) => s + e.amount, 0);
-  const balance  = spent - received;
-
-  document.getElementById('statSpent').textContent = fmt(spent);
-  document.getElementById('statPaid').textContent  = fmt(received);
-
-  const balEl   = document.getElementById('balanceAmount');
-  const noteEl  = document.getElementById('balanceNote');
-
-  if (balance <= 0) {
-    balEl.textContent  = '$0.00';
-    balEl.className    = 'balance-amount settled';
-    noteEl.textContent = balance < 0 ? `You overpaid by ${fmt(balance)}` : 'All settled up! 🎉';
-    noteEl.className   = 'balance-note settled';
-  } else {
-    balEl.textContent  = fmt(balance);
-    balEl.className    = 'balance-amount owes';
-    noteEl.textContent = 'Mom still owes you';
-    noteEl.className   = 'balance-note owes';
+  // Helpers
+  function todayDate() { return new Date().toISOString().split('T')[0]; }
+  function formatDate(d) {
+    if (!d) return '';
+    const [y, m, day] = d.split('-');
+    const mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return mo[parseInt(m)-1] + ' ' + parseInt(day) + ', ' + y;
   }
-}
-
-function renderEntries() {
-  const list = document.getElementById('entryList');
-  let filtered = entries;
-  if (currentFilter !== 'all') filtered = entries.filter(e => e.type === currentFilter);
-
-  document.getElementById('listCount').textContent =
-    filtered.length + ' Entr' + (filtered.length === 1 ? 'y' : 'ies');
-
-  if (!filtered.length) {
-    list.innerHTML = `<div class="empty"><div>${
-      currentFilter === 'purchase' ? '🛍' : currentFilter === 'payment' ? '💵' : '📋'
-    }</div>${
-      currentFilter === 'purchase' ? 'No purchases yet' :
-      currentFilter === 'payment'  ? 'No payments yet' : 'No entries yet'
-    }</div>`;
-    return;
+  function fmt(n) { return '$' + Math.abs(n).toFixed(2); }
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  list.innerHTML = filtered.map(e => `
-    <div class="entry-item ${e.type}">
-      <div class="entry-top">
-        <div class="entry-left">
-          <div class="entry-type-tag ${e.type}">${e.type === 'purchase' ? '🛍 Purchase' : '💵 Payment'}</div>
-          <div class="entry-title">${esc(e.title)}</div>
-          ${e.note ? `<div class="entry-note">${esc(e.note)}</div>` : ''}
-          <div class="entry-date">📅 ${formatDate(e.date)}</div>
-        </div>
-        <div class="entry-right">
-          <div class="entry-amount ${e.type}">${e.type === 'purchase' ? '+' : '−'}${fmt(e.amount)}</div>
-          <button class="del-btn" onclick="deleteEntry(${e.id})">✕</button>
+  // Type Toggle
+  window.setType = function(t) {
+    currentType = t;
+    const isPurchase = t === 'purchase';
+    document.getElementById('typePurchase').className = 'type-btn' + (isPurchase ? ' active-purchase' : '');
+    document.getElementById('typePayment').className  = 'type-btn' + (!isPurchase ? ' active-payment' : '');
+    document.getElementById('titleField').style.display = isPurchase ? 'block' : 'none';
+    const btn = document.getElementById('addBtn');
+    btn.textContent = isPurchase ? '+ Add Purchase' : '+ Record Payment';
+    btn.className = 'add-btn ' + t;
+  };
+
+  // Filter
+  window.setFilter = function(f) {
+    currentFilter = f;
+    ['all','purchase','payment'].forEach(x =>
+      document.getElementById('f-' + x).classList.toggle('active', x === f));
+    renderEntries();
+  };
+
+  // Add Entry
+  window.addEntry = function() {
+    const title  = currentType === 'payment' ? 'Payment' : document.getElementById('entryTitle').value.trim();
+    const amount = parseFloat(document.getElementById('entryAmount').value);
+    const date   = document.getElementById('entryDate').value || todayDate();
+    const note   = document.getElementById('entryNote').value.trim();
+
+    if (currentType === 'purchase' && !title) return toast('Enter what you bought!');
+    if (isNaN(amount) || amount <= 0) return toast('Enter a valid amount!');
+
+    push(entriesRef, { id: Date.now(), type: currentType, title, amount, date, note });
+
+    if (currentType === 'purchase') document.getElementById('entryTitle').value = '';
+    document.getElementById('entryAmount').value = '';
+    document.getElementById('entryDate').value   = todayDate();
+    document.getElementById('entryNote').value   = '';
+    toast(currentType === 'purchase' ? '🛍 Purchase added!' : '💵 Payment recorded!');
+  };
+
+  // Delete
+  window.deleteEntry = function(firebaseKey) {
+    remove(ref(db, 'entries/' + firebaseKey));
+  };
+
+  // Clear All
+  window.clearAll = function() {
+    if (!entries.length) return toast('Nothing to clear!');
+    document.getElementById('confirmOverlay').classList.add('show');
+  };
+  window.confirmClear = function() {
+    set(entriesRef, null);
+    document.getElementById('confirmOverlay').classList.remove('show');
+    toast('All entries cleared!');
+  };
+  window.cancelClear = function() {
+    document.getElementById('confirmOverlay').classList.remove('show');
+  };
+
+  // ── Export Backup ──
+  window.exportBackup = function() {
+    if (!entries.length) return toast('No entries to export!');
+    const clean = entries.map(({ firebaseKey, ...rest }) => rest);
+    const data  = JSON.stringify({ exported: new Date().toISOString(), entries: clean }, null, 2);
+    const blob  = new Blob([data], { type: 'application/json' });
+    const url   = URL.createObjectURL(blob);
+    const a     = document.createElement('a');
+    a.href      = url;
+    a.download  = `moms-tab-backup-${todayDate()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast('✅ Backup downloaded!');
+  };
+
+  // ── Import Backup ──
+  window.openImport = function() {
+    document.getElementById('fileInput').value = '';
+    document.getElementById('importOverlay').classList.add('show');
+  };
+  window.closeImport = function() {
+    document.getElementById('importOverlay').classList.remove('show');
+    pendingImportData = null;
+  };
+  window.handleFileSelect = function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const parsed = JSON.parse(e.target.result);
+        if (!parsed.entries || !Array.isArray(parsed.entries)) throw new Error();
+        pendingImportData = parsed.entries;
+        document.getElementById('importOverlay').classList.remove('show');
+        document.getElementById('importConfirmMsg').textContent =
+          `Found ${pendingImportData.length} entries in backup. This will replace all current data.`;
+        document.getElementById('importConfirmOverlay').classList.add('show');
+      } catch {
+        toast('❌ Invalid backup file!');
+        document.getElementById('importOverlay').classList.remove('show');
+      }
+    };
+    reader.readAsText(file);
+  };
+  window.confirmImport = function() {
+    if (!pendingImportData) return;
+    set(entriesRef, null).then(() => {
+      pendingImportData.forEach(entry => {
+        const { firebaseKey, ...clean } = entry;
+        push(entriesRef, { ...clean, id: clean.id || Date.now() });
+      });
+      toast(`✅ Imported ${pendingImportData.length} entries!`);
+      pendingImportData = null;
+      document.getElementById('importConfirmOverlay').classList.remove('show');
+    });
+  };
+  window.cancelImport = function() {
+    pendingImportData = null;
+    document.getElementById('importConfirmOverlay').classList.remove('show');
+  };
+
+  // Balance
+  function updateBalance() {
+    const spent    = entries.filter(e => e.type === 'purchase').reduce((s,e) => s + e.amount, 0);
+    const received = entries.filter(e => e.type === 'payment').reduce((s,e) => s + e.amount, 0);
+    const balance  = spent - received;
+
+    document.getElementById('statSpent').textContent = fmt(spent);
+    document.getElementById('statPaid').textContent  = fmt(received);
+
+    const balEl  = document.getElementById('balanceAmount');
+    const noteEl = document.getElementById('balanceNote');
+
+    if (balance <= 0) {
+      balEl.textContent  = '$0.00';
+      balEl.className    = 'balance-amount settled';
+      noteEl.textContent = balance < 0 ? `You overpaid by ${fmt(balance)}` : 'All settled up! 🎉';
+      noteEl.className   = 'balance-note settled';
+    } else {
+      balEl.textContent  = fmt(balance);
+      balEl.className    = 'balance-amount owes';
+      noteEl.textContent = 'Mom still owes you';
+      noteEl.className   = 'balance-note owes';
+    }
+  }
+
+  // Render
+  function renderEntries() {
+    const list = document.getElementById('entryList');
+    const filtered = currentFilter === 'all' ? entries : entries.filter(e => e.type === currentFilter);
+
+    document.getElementById('listCount').textContent =
+      filtered.length + ' Entr' + (filtered.length === 1 ? 'y' : 'ies');
+
+    if (!filtered.length) {
+      list.innerHTML = `<div class="empty"><div>${
+        currentFilter === 'purchase' ? '🛍' : currentFilter === 'payment' ? '💵' : '📋'
+      }</div>${
+        currentFilter === 'purchase' ? 'No purchases yet' :
+        currentFilter === 'payment'  ? 'No payments yet' : 'No entries yet'
+      }</div>`;
+      return;
+    }
+
+    list.innerHTML = filtered.map(e => `
+      <div class="entry-item ${e.type}">
+        <div class="entry-top">
+          <div class="entry-left">
+            <div class="entry-type-tag ${e.type}">${e.type === 'purchase' ? '🛍 Purchase' : '💵 Payment'}</div>
+            <div class="entry-title">${esc(e.title)}</div>
+            ${e.note ? `<div class="entry-note">${esc(e.note)}</div>` : ''}
+            <div class="entry-date">📅 ${formatDate(e.date)}</div>
+          </div>
+          <div class="entry-right">
+            <div class="entry-amount ${e.type}">${e.type === 'purchase' ? '+' : '−'}${fmt(e.amount)}</div>
+            <button class="del-btn" onclick="deleteEntry('${e.firebaseKey}')">✕</button>
+          </div>
         </div>
       </div>
-    </div>
-  `).join('');
-}
+    `).join('');
+  }
 
-function esc(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+  // Toast
+  let toastTimer;
+  window.toast = function(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+  };
 
-let toastTimer;
-function toast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
-}
-
-document.getElementById('entryDate').value = todayDate();
-renderEntries();
-updateBalance();
+  // Init
+  document.getElementById('entryDate').value = todayDate();
 </script>
 </body>
 </html>
